@@ -17,9 +17,10 @@ The guide is the deliverable, and it has grown with every playground:
   and "which rule" to the file that states it.
 
 That structure is deliberate. Each rule is stated once, in the file that applies it.
-But it means a reader opens many files to build one page, and the guide is hard to hold
-in one's head. This repository asks whether the same architecture can be described in
-far less.
+But a rule stated once must be linked from everywhere else it applies, so building one
+page means following links across files and holding the rules in one's head. This
+repository asks whether the same architecture can be carried by far less prose: one
+short overview, and examples that are complete on their own.
 
 ## The hypothesis
 
