@@ -24,19 +24,17 @@ short overview, and examples that are complete on their own.
 
 ## The hypothesis
 
-Three things should be enough to implement against:
+Two things should be enough to implement against:
 
 1. **An overview of the layers.** The whole shape on one screen: which layers exist,
    and in what order data moves through them.
-2. **For each layer, three facts.** What it receives, what it does with that, and
-   where it hands the result. Nothing else about the layer needs stating.
-3. **For each layer, one file per implementation pattern.** Each file holds one complete
+2. **For each layer, one file per implementation pattern.** Each file holds one complete
    implementation that follows the rules, why it does, and a few that break them by a
    few lines, so a rule can be recognized rather than interpreted.
 
 If the guide says this much and a builder still cannot decide something, the
 document is not the place to resolve it. The builder asks a human, and the question and
-the answer are kept in this repository as a record. Those records show what the three
+the answer are kept in this repository as a record. Those records show what the two
 items could not carry, and whether an answer belongs back in the guide or stays a
 one-off.
 
@@ -45,14 +43,14 @@ one-off.
 The verification borrows Tolone's own method: put the document under pressure by
 building against it.
 
-1. Write `architecture.md` and `layers/` from scratch, holding them to the three items
+1. Write `architecture.md` and `layers/` from scratch, holding them to the two items
    above. Prose lives only in `architecture.md`; a pattern file holds code, one line of
    when to use it, and one line of why per decision.
 2. Build a small playground from those files alone.
 3. Where the build cannot decide, do not guess and do not patch the guide on the spot.
    Ask a human, and record the question and the answer.
 4. Afterwards, go through the records. An answer that would apply to any page goes into
-   the guide, within the same three items. An answer that only applied once stays in
+   the guide, within the same two items. An answer that only applied once stays in
    the record.
 5. Compare the result with Tolone's guide: what was dropped safely, what had to return,
    and what turned out to belong in an ADR rather than in the guide.
@@ -66,9 +64,9 @@ directory for the layer it is about to write, and nothing else.
 ```
 .
 ├── README.md
-├── architecture.md              # Items 1 and 2: the shape, and three facts per layer
+├── architecture.md              # Item 1: the shape, the layers, and the data flow
 ├── layers/
-│   └── {layer}/                 # Item 3: one file per implementation pattern
+│   └── {layer}/                 # Item 2: one file per implementation pattern
 │       └── {pattern}.md         #   When, Good with its why, Bads that differ by a few lines
 └── playgrounds/
     └── incident-board/          # The first app built from the guide alone
@@ -77,5 +75,5 @@ directory for the layer it is about to write, and nothing else.
 
 ## Status
 
-`architecture.md` holds item 1; the three facts per layer are not written. `layers/` has
-container-hook only; the other seven layers are not written. No playground yet.
+`architecture.md` is written. `layers/` has container-hook only; the other seven layers are
+not written. No playground yet.
