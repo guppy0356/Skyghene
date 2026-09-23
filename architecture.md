@@ -39,5 +39,53 @@ write   screen → component hook (+ form schema) → container-hook action → 
 url     Component (navigate, Link) → URL → Container (useParams, useSearch) → container hook params
 ```
 
+The same three flows, drawn. Each column is a layer; an arrow is what one layer hands
+the next, so a column's incoming arrows are what it receives and its outgoing arrows are
+what it hands on.
+
+```mermaid
+sequenceDiagram
+  participant S as server
+  participant A as Todo.api.ts
+  participant Q as Todo.queries.ts
+  participant CH as Todo.container.hook.ts
+  participant C as Todo.container.tsx
+  participant U as URL
+  box サーバーを知らない側
+    participant P as Todo.component.tsx
+    participant PH as Todo.component.hook.ts
+  end
+  participant V as screen
+
+  rect rgb(221, 237, 236)
+    Note over S,V: 読む — 矢印は「何を渡すか」
+    S->>A: 検証済みの JSON
+    A->>Q: todoApi.getAll を queryFn に
+    Q->>CH: todoQueries.list() を useQuery に
+    CH->>C: TodoContainerState
+    C->>P: 個別の props
+    P->>PH: params { addTodo }
+    Note over PH: view-model の純関数を useMemo で呼ぶ
+    PH->>V: JSX
+  end
+
+  rect rgb(244, 232, 214)
+    Note over S,V: 書く
+    V->>PH: submit / onChange
+    Note over PH: schema を zodResolver で
+    PH->>CH: addTodo(input) — props で降りてきた action
+    CH->>A: todoApi.create(input)
+    A->>S: POST /api/todos
+    CH-->>Q: onSettled: invalidate list()
+  end
+
+  rect rgb(232, 238, 236)
+    Note over S,V: URL
+    P->>U: navigate / Link
+    U->>C: useParams / useSearch
+    C->>CH: params
+  end
+```
+
 Container-hook actions reach the component hook as props through the Container. The
 component hook never calls the container hook, and is called only inside the Component.
