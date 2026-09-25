@@ -64,6 +64,60 @@ Why:
 - `todos` は `data ?? []`。初回の取得が終わるまで `data` は `undefined` なので、Component に `undefined` を渡さない。
 - 返すフラグは `isPending` と `isRefetching` だけ。このページが描画するのは Skeleton と、再取得中に一覧を薄くする表示の2つだから。
 
+## 使い方
+
+この hook を使う側のコード。値が使われる行まで。
+
+```tsx
+// Todo.container.tsx — 受け取って、個別の props に分けるだけ
+export function TodoContainer() {
+  const { todos, isPending, isRefetching, addTodo } = useTodoContainer();
+  return (
+    <TodoComponent
+      todos={todos}
+      isPending={isPending}
+      isRefetching={isRefetching}
+      addTodo={addTodo}
+    />
+  );
+}
+
+// Todo.component.tsx — フラグで Skeleton と薄い表示を切り替え、addTodo は component hook に渡す
+export function TodoComponent({
+  todos,
+  isPending,
+  isRefetching,
+  addTodo,
+}: TodoContainerState) {
+  const { newTitle, setNewTitle, handleSubmit } = useTodoComponent({ addTodo });
+  return (
+    <>
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+        <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+        <button type="submit">Add</button>
+      </form>
+      <div className={isRefetching ? "opacity-50" : ""}>
+        {isPending ? <TodoListSkeleton /> : <TodoList todos={todos} />}
+      </div>
+    </>
+  );
+}
+
+// Todo.component.hook.ts — addTodo を params で受け取り、handleSubmit の中で呼ぶ
+export function useTodoComponent({ addTodo }: TodoComponentParams): TodoComponentState {
+  const [newTitle, setNewTitle] = useState("");
+
+  const handleSubmit = useCallback(async () => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) return;
+    await addTodo({ title: trimmed });
+    setNewTitle("");
+  }, [newTitle, addTodo]);
+
+  return { newTitle, setNewTitle, handleSubmit };
+}
+```
+
 ## Bad: フォームの入力値を hook が持つ
 
 ```ts

@@ -42,6 +42,45 @@ Why:
 - `addTodo` は作成した `Todo` を返す。Component がその id を使って詳細ページへ移動する。
 - mutation の `isPending` を返さない。送信中かどうかは component hook がフォームの `isSubmitting` で持つ。
 
+## 使い方
+
+この hook を使う側のコード。値が使われる行まで。
+
+```tsx
+// TodoForm.container.tsx — hook を呼び、addTodo を props で渡すだけ
+export function TodoFormContainer() {
+  const { addTodo } = useTodoFormContainer();
+  return <TodoFormComponent addTodo={addTodo} />;
+}
+
+// TodoForm.component.tsx — navigate を callback に包んで hook に渡す。作成した Todo の id で詳細ページへ移動する
+export function TodoFormComponent({ addTodo }: TodoFormContainerState) {
+  const navigate = useNavigate();
+  const onSaved = useCallback(
+    (todo: Todo) => navigate({ to: "/todos/$todoId", params: { todoId: todo.id } }),
+    [navigate],
+  );
+  const { titleField, isValid, isSubmitting, handleSubmit } = useTodoFormComponent({ addTodo, onSaved });
+  // ...
+}
+
+// TodoForm.component.hook.ts — addTodo を呼び、戻り値の Todo を onSaved に渡す
+export function useTodoFormComponent({
+  addTodo,
+  onSaved,
+}: TodoFormComponentParams): TodoFormComponentState {
+  // ... useForm とフィールドの用意
+  const onSubmit = useCallback(
+    async (data: TodoFormValues) => {
+      const created = await addTodo(data);
+      onSaved(created);
+    },
+    [addTodo, onSaved],
+  );
+  // ...
+}
+```
+
 ## Bad: 誰も見ない一覧を楽観的更新する
 
 ```ts
