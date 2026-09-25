@@ -75,5 +75,5 @@ directory for the layer it is about to write, and nothing else.
 
 ## Status
 
-`architecture.md` is written. `layers/` has container-hook only; the other seven layers are
-not written. No playground yet.
+`architecture.md` is written. `layers/` has container-hook only, still on the Todo examples
+that plan.md replaces; the other nine layers are not written. No playground yet.
