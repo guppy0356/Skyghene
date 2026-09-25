@@ -1,6 +1,6 @@
 # container-hook / detail-page
 
-When: URL の id で1件を読むページ。
+When: a page that reads one record by the id in the URL.
 
 ## Good
 
@@ -38,18 +38,24 @@ export function useTodoDetailContainer({
 
 Why:
 
-- `todoId` はパラメータで受け取る。URL を読むのは Container で、hook は URL を知らない。だからルーターなしで呼べて、テストできる。
-- `isNotFound` は `TypedStatusError` の 404 から作る。API レイヤーはエラーを処理しないので、HTTP のエラーをドメインのフラグに変えるのはこの hook の仕事。
-- `TypedStatusError` を独自のエラー型で包まない。プロジェクト共通のクライアントの標準エラーなので、そのまま読む。
-- `detail` は `Todo | undefined` のまま返す。1件のデータには `[]` のような既定値がない。`undefined` の間は Component が `isPending` と `isNotFound` で分岐する。
-- 返すフラグは `isPending` と `isRefetching`。Skeleton と、再取得中に内容を薄くする表示に使う。
+- `todoId` arrives as a param. The Container reads the URL; the hook never sees it. That
+  is what lets the hook be called, and tested, without a router.
+- `isNotFound` is built from a `TypedStatusError` with status 404. The API layer handles
+  no errors, so turning an HTTP error into a domain flag is this hook's job.
+- `TypedStatusError` is read as it is, not wrapped in an error type of our own. It is the
+  standard error of the project-wide client.
+- `detail` is returned as `Todo | undefined`. A single record has no default the way a
+  list has `[]`. While it is `undefined`, the Component branches on `isPending` and
+  `isNotFound`.
+- The flags returned are `isPending` and `isRefetching`: the Skeleton, and the dimmed
+  content during a refetch.
 
-## 使い方
+## Usage
 
-この hook を使う側のコード。値が使われる行まで。
+The code that uses this hook, down to the line where each value is used.
 
 ```tsx
-// TodoDetail.container.tsx — URL から todoId を読んで渡し、戻り値を個別の props に分けるだけ
+// TodoDetail.container.tsx — reads todoId from the URL, passes it in, splits the result into individual props
 export function TodoDetailContainer() {
   const { todoId } = useParams({ from: "/todos/$todoId" });
   const { detail, isPending, isRefetching, isNotFound } = useTodoDetailContainer({ todoId });
@@ -63,7 +69,7 @@ export function TodoDetailContainer() {
   );
 }
 
-// TodoDetail.component.tsx — フラグで分岐してから本体を描く
+// TodoDetail.component.tsx — branches on the flags, then renders the body
 export function TodoDetailComponent({
   detail,
   isPending,
@@ -80,7 +86,7 @@ export function TodoDetailComponent({
 }
 ```
 
-## Bad: hook が自分で URL を読む
+## Bad: the hook reads the URL itself
 
 ```ts
 export function useTodoDetailContainer(): TodoDetailContainerState {
@@ -88,9 +94,10 @@ export function useTodoDetailContainer(): TodoDetailContainerState {
   const { data, isPending, isRefetching, error } = useQuery(todoQueries.detail(todoId));
 ```
 
-Why: 呼ぶだけでルーターが必要になり、hook 単体のテストにもルーターが要る。URL を読むのは Container の仕事。
+Why: Calling it now needs a router, and so does testing it alone. Reading the URL is the
+Container's job.
 
-## Bad: error をそのまま返す
+## Bad: `error` is returned as it is
 
 ```ts
   return {
@@ -101,9 +108,10 @@ Why: 呼ぶだけでルーターが必要になり、hook 単体のテストに�
   };
 ```
 
-Why: Component が HTTP ステータスを知ることになる。Component が受け取るのは `isNotFound` のようなドメインのフラグだけ。
+Why: The Component would learn about HTTP statuses. It receives domain flags such as
+`isNotFound`, nothing else.
 
-## Bad: `enabled` で止めたクエリに `isPending` を使う
+## Bad: `isPending` on a query gated by `enabled`
 
 ```ts
   const { data, isPending, isRefetching, error } = useQuery({
@@ -112,4 +120,6 @@ Why: Component が HTTP ステータスを知ることになる。Component が�
   });
 ```
 
-Why: 止まっているクエリは `isPending` が true のまま。Skeleton が永久に出る。止めるなら `isLoading` を返す。このページでは id が必ず届くので、止める必要がそもそもない。
+Why: A gated query stays `isPending`, so the Skeleton never goes away. If a query has to
+be gated, return `isLoading`. On this page the id always arrives, so there is nothing to
+gate.

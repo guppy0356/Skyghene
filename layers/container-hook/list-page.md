@@ -1,6 +1,6 @@
 # container-hook / list-page
 
-When: 一覧を表示し、同じ画面のまま追加するページ。
+When: a page that shows a list and adds to it without leaving the screen.
 
 ## Good
 
@@ -25,7 +25,7 @@ export function useTodoContainer(): TodoContainerState {
 
   const addMutation = useMutation({
     mutationFn: (input: CreateTodoInput) => todoApi.create(input),
-    // 進行中の取得を止め、直前の一覧を控え、キャッシュを先に書き換える
+    // cancel in-flight fetches, keep the previous list, write the cache first
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: listQuery.queryKey });
       const previous = queryClient.getQueryData<Todo[]>(listQuery.queryKey);
@@ -35,11 +35,11 @@ export function useTodoContainer(): TodoContainerState {
       ]);
       return { previous };
     },
-    // 失敗したら控えた一覧に戻す
+    // on failure, restore the previous list
     onError: (_error, _input, context) => {
       queryClient.setQueryData(listQuery.queryKey, context?.previous);
     },
-    // 成否にかかわらずサーバーの値で取り直す
+    // either way, refetch from the server
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: listQuery.queryKey });
     },
@@ -58,18 +58,23 @@ export function useTodoContainer(): TodoContainerState {
 
 Why:
 
-- 追加は楽観的更新にする。一覧が画面に残り、ユーザーが書き込んだ結果をその場で見るから。
-- キーは `listQuery.queryKey` から読む。`useQuery` と3つのコールバックが同じ定義を使うので、キーがずれない。
-- `addTodo` の依存は `addMutation.mutateAsync`。安定した参照なので `addTodo` も安定し、Component の `memo` 化した body が再描画されない。
-- `todos` は `data ?? []`。初回の取得が終わるまで `data` は `undefined` なので、Component に `undefined` を渡さない。
-- 返すフラグは `isPending` と `isRefetching` だけ。このページが描画するのは Skeleton と、再取得中に一覧を薄くする表示の2つだから。
+- Adding is an optimistic update. The list stays on screen, so the user sees the result
+  of the write right away.
+- Keys are read from `listQuery.queryKey`. `useQuery` and the three callbacks use one
+  definition, so the key cannot drift.
+- `addTodo` depends on `addMutation.mutateAsync`. It is a stable reference, so `addTodo`
+  is stable too and the Component's `memo`'d body does not re-render.
+- `todos` is `data ?? []`. `data` is `undefined` until the first fetch completes, and the
+  Component must not receive `undefined`.
+- Only `isPending` and `isRefetching` are returned. This page renders exactly two things
+  from them: the Skeleton, and the dimmed list during a refetch.
 
-## 使い方
+## Usage
 
-この hook を使う側のコード。値が使われる行まで。
+The code that uses this hook, down to the line where each value is used.
 
 ```tsx
-// Todo.container.tsx — 受け取って、個別の props に分けるだけ
+// Todo.container.tsx — takes the result and splits it into individual props
 export function TodoContainer() {
   const { todos, isPending, isRefetching, addTodo } = useTodoContainer();
   return (
@@ -82,7 +87,7 @@ export function TodoContainer() {
   );
 }
 
-// Todo.component.tsx — フラグで Skeleton と薄い表示を切り替え、addTodo は component hook に渡す
+// Todo.component.tsx — switches between Skeleton and dimmed list on the flags; hands addTodo to the component hook
 export function TodoComponent({
   todos,
   isPending,
@@ -103,7 +108,7 @@ export function TodoComponent({
   );
 }
 
-// Todo.component.hook.ts — addTodo を params で受け取り、handleSubmit の中で呼ぶ
+// Todo.component.hook.ts — takes addTodo as a param and calls it inside handleSubmit
 export function useTodoComponent({ addTodo }: TodoComponentParams): TodoComponentState {
   const [newTitle, setNewTitle] = useState("");
 
@@ -118,7 +123,7 @@ export function useTodoComponent({ addTodo }: TodoComponentParams): TodoComponen
 }
 ```
 
-## Bad: フォームの入力値を hook が持つ
+## Bad: the hook holds the form input
 
 ```ts
 export function useTodoContainer(): TodoContainerState {
@@ -128,9 +133,10 @@ export function useTodoContainer(): TodoContainerState {
 }
 ```
 
-Why: 入力値はローカル UI 状態で、component hook が持つ。ここに置くと、入力欄のテストにも QueryClient とモックサーバーが要る。
+Why: The input value is local UI state and belongs to the component hook. Held here,
+even a test of the input field needs a QueryClient and a mock server.
 
-## Bad: `useCallback` が mutation オブジェクトに依存する
+## Bad: `useCallback` depends on the mutation object
 
 ```ts
   const addTodo = useCallback(
@@ -141,9 +147,10 @@ Why: 入力値はローカル UI 状態で、component hook が持つ。ここ�
   );
 ```
 
-Why: `useMutation` の戻り値は毎レンダー新しいオブジェクト。`addTodo` も毎回変わり、Component の `memo` 化した body が refetch のたびに再描画される。
+Why: `useMutation` returns a new object on every render. `addTodo` changes with it, and
+the Component's `memo`'d body re-renders on every refetch.
 
-## Bad: キーを手書きする
+## Bad: the key is written by hand
 
 ```ts
     onSettled: () => {
@@ -151,4 +158,5 @@ Why: `useMutation` の戻り値は毎レンダー新しいオブジェクト。`
     },
 ```
 
-Why: キーの定義が Queries と2箇所になる。Queries 側を変えても、ここは型エラーにならずに黙って外れる。
+Why: The key is now defined in two places, here and in Queries. Change the Queries side
+and this one silently stops matching; nothing fails to typecheck.
