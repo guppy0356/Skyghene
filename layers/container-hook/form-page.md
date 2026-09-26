@@ -1,6 +1,6 @@
 # container-hook / form-page
 
-When: a page that navigates to another page once it has saved.
+When: a form that navigates to another page once it has saved.
 
 ## Good
 

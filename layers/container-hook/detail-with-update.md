@@ -1,7 +1,6 @@
 # container-hook / detail-with-update
 
-When: a detail page with an action that changes the record in place, while the page
-stays on screen.
+When: a page that shows one record by the id in the URL and changes it in place.
 
 ## Good
 

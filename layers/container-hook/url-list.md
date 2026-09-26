@@ -1,8 +1,6 @@
 # container-hook / url-list
 
-When: a list whose filter, sort and page live in the URL, and whose filter needs a second
-resource for its options. Here `Todo` has an `assigneeId`, `Member` is the second resource,
-and Queries is the parameterized shape: a `lists()` prefix over a `list(params)` leaf.
+When: a list whose filter, sort and page live in the URL, read alongside a second resource.
 
 ## Good
 

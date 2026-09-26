@@ -1,6 +1,6 @@
 # container-hook / detail-page
 
-When: a page that reads one record by the id in the URL.
+When: a page that shows one record by the id in the URL and does not change it.
 
 ## Good
 
