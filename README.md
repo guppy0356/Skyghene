@@ -56,8 +56,8 @@ building against it.
    and what turned out to belong in an ADR rather than in the guide.
 
 Two rules keep `layers/` from growing back into Tolone's guide: prose stays in
-`architecture.md`, and pattern files never link to each other. A builder reads the whole
-directory for the layer it is about to write, and nothing else.
+`architecture.md`, and pattern files never link to each other. A builder reads the When
+lines of the layer it is about to write, picks one file, and reads nothing else.
 
 ## Layout
 
@@ -75,5 +75,5 @@ directory for the layer it is about to write, and nothing else.
 
 ## Status
 
-`architecture.md` is written. `layers/` has container-hook only, still on the Todo examples
-that plan.md replaces; the other nine layers are not written. No playground yet.
+`architecture.md` is written. `layers/` has container-hook only, five Todo files; the other
+nine layers are not written. No playground yet.
