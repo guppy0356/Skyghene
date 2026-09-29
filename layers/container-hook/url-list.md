@@ -1,6 +1,6 @@
 # container-hook / url-list
 
-When: a list whose filter, sort and page live in the URL, read alongside a second resource.
+When: a list whose filter, sort and page live in the URL.
 
 ## Good
 
@@ -141,8 +141,8 @@ export function useTodoListContainer(): TodoListContainerState {
 ```
 
 Why: A list's filter should survive a reload and be shareable, so it belongs in the URL.
-Held here it is gone on reload and cannot be linked to. `useState` in a container hook is
-for query input deliberately kept out of the URL, such as a typeahead keyword.
+`useState` here is for query input deliberately kept out of the URL, such as a typeahead
+keyword.
 
 ## Bad: `params` is returned
 

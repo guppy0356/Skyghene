@@ -1,6 +1,6 @@
 # container-hook / list-page
 
-When: a list that stays on screen while the user adds to it and removes from it.
+When: a list with nothing in the URL that stays on screen while the user adds to it and removes from it.
 
 ## Good
 

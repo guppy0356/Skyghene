@@ -176,9 +176,8 @@ the hook has: the previous record and the input.
     // no onSettled
 ```
 
-Why: The list renders `completed`, so it is now wrong. Going back to it shows the old
-value until something else refetches it. A write reconciles every cache that mirrors the
-changed field.
+Why: The list renders `completed`, so going back to it shows the old value until
+something else refetches it. A write reconciles every cache that mirrors the changed field.
 
 ## Bad: the mutation object is returned
 

@@ -120,6 +120,5 @@ Why: The Component would learn about HTTP statuses. It receives domain flags suc
   });
 ```
 
-Why: A gated query stays `isPending`, so the Skeleton never goes away. If a query has to
-be gated, return `isLoading`. On this page the id always arrives, so there is nothing to
-gate.
+Why: A gated query stays `isPending`, so the Skeleton never goes away; return `isLoading`
+instead. On this page the id always arrives, so there is nothing to gate.
