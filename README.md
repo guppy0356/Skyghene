@@ -77,4 +77,5 @@ lines of the layer it is about to write, picks one file, and reads nothing else.
 
 `architecture.md` is written. `layers/` has container-hook (five Todo files), container
 (four), component-hook (four), view-model (four), component (five), queries (three), api
-(four) and form-schema (one); the other two layers are not written. No playground yet.
+(four), form-schema (one) and route (six); the remaining layer is not written. No
+playground yet.
