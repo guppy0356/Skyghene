@@ -43,8 +43,8 @@ Why:
   schema's `satisfies` all import it from here, so one shape runs from the Container to
   the request.
 - The type is read off the generated endpoint (`get__api_incidents["parameters"]["query"]`),
-  not written by hand, so a parameter renamed in the contract is a type error everywhere
-  the params travel.
+  not written by hand, so a parameter the contract retypes, or one it starts to require, is
+  a type error everywhere the params travel.
 - `params` goes to the client as `query` untouched. The generated encoder owns the wire
   shape and writes `status: ["open", "resolved"]` as `status=open&status=resolved`.
 - The enum arrays come from the generated zod enums' `.options`, renamed here like the
@@ -79,16 +79,16 @@ const incidentListSearchSchema = z.object({
 
 ```ts
 export interface IncidentListParams {
-  status?: string[];
-  severity?: string;
-  sort?: string;
+  status?: IncidentStatus[];
+  severity?: IncidentSeverity;
+  sort?: IncidentSort;
   page?: number;
 }
 ```
 
-Why: A second copy of the contract that nothing checks, so a renamed or retyped parameter
-compiles and is sent wrong. Take the type off the generated endpoint, so the contract
-enters the app in this one file.
+Why: A second copy of the contract: when the endpoint retypes a parameter, `getList` stops
+compiling until someone edits this copy by hand. Take the type off the generated endpoint,
+so the contract enters the app in this one file.
 
 ## Bad: the query string is encoded here
 
