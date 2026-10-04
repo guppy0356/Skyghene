@@ -68,6 +68,19 @@ lines of the layer it is about to write, picks one file, and reads nothing else.
 ├── layers/
 │   └── {layer}/                 # Item 2: one file per implementation pattern
 │       └── {pattern}.md         #   When, Good with its why, Bads that differ by a few lines
+├── package.json                 # Workspace root: the new:playground script and msw.workerDirectory
+├── pnpm-workspace.yaml          # The workspace packages and the dependency catalog
+├── pnpm-lock.yaml
+├── tsconfig.json                # Compiler options every playground extends
+├── .gitignore
+├── scripts/
+│   ├── new-playground.mjs       # Scaffolds playgrounds/{name}/ for `pnpm new:playground {name}`
+│   └── sync-msw-worker.mjs      # postinstall: copies MSW's worker script into each msw.workerDirectory
+├── packages/
+│   └── tailwind/                # @skyghene/tailwind: base.css, imported by every playground's app.css
+│       ├── base.css
+│       ├── package.json
+│       └── tsconfig.json
 └── playgrounds/
     └── incident-board/          # The first app built from the guide alone
         └── questions.md         # What the guide could not answer while building it, and what the human said
@@ -77,5 +90,8 @@ lines of the layer it is about to write, picks one file, and reads nothing else.
 
 `architecture.md` is written. `layers/` has container-hook (five Todo files), container
 (four), component-hook (four), view-model (four), component (five), queries (three), api
-(four), form-schema (one), route (six) and search (two); every layer is written. No
-playground yet.
+(four), form-schema (one), route (six) and search (two); every layer is written.
+
+The root is a pnpm workspace ported from Tolone, so `pnpm new:playground {name}`
+scaffolds a playground as it does there. A throwaway `demo` installed, typechecked and
+showed its placeholder page in the browser, and was then removed. No playground yet.
