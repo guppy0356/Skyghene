@@ -1,0 +1,23 @@
+{
+  "name": "Skyghene",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "new:playground": "node scripts/new-playground.mjs",
+    "dev": "pnpm --filter @skyghene/* dev",
+    "test": "pnpm -r test",
+    "postinstall": "node scripts/sync-msw-worker.mjs"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=20.19.0",
+    "pnpm": ">=10"
+  },
+  "msw": {
+    "workerDirectory": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@skyghene/tailwind",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./base.css": "./base.css"
+  },
+  "devDependencies": {
+    "tailwindcss": "catalog:",
+    "@tailwindcss/vite": "catalog:"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+.vite
+.DS_Store
+storybook-static
+.vitest-attachments
+__screenshots__
+.vitest
