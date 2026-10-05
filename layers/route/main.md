@@ -10,14 +10,17 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
-import { worker } from "./mocks/browser";
 import { router } from "./router";
-import "./index.css";
+import "./app.css";
 
 const queryClient = new QueryClient();
 
-// There is no backend: the dev seed answers /api, so render once it is listening.
-worker.start().then(() => {
+async function enableMocking() {
+  const { worker } = await import("./mocks/browser");
+  return worker.start({ onUnhandledRequest: "bypass" });
+}
+
+enableMocking().then(() => {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
@@ -37,11 +40,12 @@ Why:
 - One `QueryClient` for the whole app, provided above the router. Every page's container
   hook reads the same keyed cache, which is how two pages over one resource share data
   without sharing a hook.
-- The worker is the dev seed's, built from `src/mocks/handlers.ts` in
-  `src/mocks/browser.ts`. Tests start their own empty worker in `src/test/setup.ts` and
-  never this one.
-- Rendering waits for `worker.start()`. Until the worker listens, a page's first query
-  would go to a server that does not exist.
+- `enableMocking()` loads `src/mocks/browser.ts` with a dynamic `import()` when it runs,
+  and starts the worker that file builds from `src/mocks/handlers.ts`, the dev seed. Tests
+  start their own empty worker in `src/test/setup.ts` and never this one.
+- `onUnhandledRequest: "bypass"` lets a request that no handler matches go on to the
+  network as it is, with nothing printed.
+- The render runs inside `enableMocking().then(...)`, once `worker.start()` has resolved.
 
 ## Usage
 

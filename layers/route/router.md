@@ -49,7 +49,7 @@ The code that uses this module: `main.tsx` hands the router to the provider, and
 
 ```tsx
 // src/main.tsx
-worker.start().then(() => {
+enableMocking().then(() => {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
