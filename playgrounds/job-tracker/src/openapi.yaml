@@ -1,5 +1,232 @@
 openapi: 3.1.0
 info:
-  title: Job-tracker
-  version: 0.0.0
-paths: {}
+  title: Job Tracker
+  version: 0.1.0
+paths:
+  /api/applications:
+    get:
+      operationId: listApplications
+      parameters:
+        - name: status
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/ApplicationStatus"
+        - name: sort
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/ApplicationSort"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: One page of applications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationPage"
+    post:
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApplicationInput"
+      responses:
+        "201":
+          description: The created application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDetail"
+  /api/applications/{applicationId}:
+    parameters:
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getApplication
+      responses:
+        "200":
+          description: One application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDetail"
+        "404":
+          description: No such application
+    patch:
+      operationId: updateApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateApplicationInput"
+      responses:
+        "200":
+          description: The updated application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationDetail"
+        "404":
+          description: No such application
+    delete:
+      operationId: deleteApplication
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: No such application
+  /api/applications/{applicationId}/interviews:
+    parameters:
+      - name: applicationId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listInterviews
+      responses:
+        "200":
+          description: The application's interviews, soonest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Interview"
+        "404":
+          description: No such application
+  /api/companies:
+    get:
+      operationId: searchCompanies
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Companies whose name contains q
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Company"
+components:
+  schemas:
+    ApplicationStatus:
+      type: string
+      enum: [applied, screening, interviewing, offer, rejected]
+    ApplicationSort:
+      type: string
+      enum: ["-appliedAt", appliedAt, company]
+    ApplicationSummary:
+      type: object
+      required: [id, companyName, position, status, appliedAt]
+      properties:
+        id:
+          type: string
+        companyName:
+          type: string
+        position:
+          type: string
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+        appliedAt:
+          type: string
+          format: date
+    ApplicationPage:
+      type: object
+      required: [items, total, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationSummary"
+        total:
+          type: integer
+        pageSize:
+          type: integer
+    ApplicationDetail:
+      type: object
+      required: [id, companyId, companyName, position, status, appliedAt, notes]
+      properties:
+        id:
+          type: string
+        companyId:
+          type: string
+        companyName:
+          type: string
+        position:
+          type: string
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+        appliedAt:
+          type: string
+          format: date
+        salary:
+          type: string
+        notes:
+          type: string
+    CreateApplicationInput:
+      type: object
+      required: [companyId, position, appliedAt]
+      properties:
+        companyId:
+          type: string
+        position:
+          type: string
+        appliedAt:
+          type: string
+          format: date
+        salary:
+          type: string
+        notes:
+          type: string
+    UpdateApplicationInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+    InterviewKind:
+      type: string
+      enum: [phone, video, onsite]
+    Interview:
+      type: object
+      required: [id, kind, scheduledAt, interviewer]
+      properties:
+        id:
+          type: string
+        kind:
+          $ref: "#/components/schemas/InterviewKind"
+        scheduledAt:
+          type: string
+          format: date-time
+        interviewer:
+          type: string
+    Company:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
