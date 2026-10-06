@@ -18,6 +18,8 @@
     "pnpm": ">=10"
   },
   "msw": {
-    "workerDirectory": []
+    "workerDirectory": [
+      "playgrounds/job-tracker/public"
+    ]
   }
 }
