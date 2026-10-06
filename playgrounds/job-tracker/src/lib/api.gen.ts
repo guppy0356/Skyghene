@@ -4,22 +4,139 @@ import type * as __TypedOpenapi from "./api.gen.types.js";
   import { z } from "zod";
 
 // <Schemas>
+export type ApplicationStatus = __TypedOpenapi.Schemas.ApplicationStatus;
+export const ApplicationStatus = z.enum(["applied", "screening", "interviewing", "offer", "rejected"]);
+
+export type ApplicationSort = __TypedOpenapi.Schemas.ApplicationSort;
+export const ApplicationSort = z.enum(["-appliedAt", "appliedAt", "company"]);
+
+export type ApplicationSummary = __TypedOpenapi.Schemas.ApplicationSummary;
+export const ApplicationSummary = z.strictObject({ id: z.string(), companyName: z.string(), position: z.string(), status: ApplicationStatus, appliedAt: z.iso.date() });
+
+export type ApplicationPage = __TypedOpenapi.Schemas.ApplicationPage;
+export const ApplicationPage = z.strictObject({ items: z.array(ApplicationSummary), total: z.number().int(), pageSize: z.number().int() });
+
+export type ApplicationDetail = __TypedOpenapi.Schemas.ApplicationDetail;
+export const ApplicationDetail = z.strictObject({ id: z.string(), companyId: z.string(), companyName: z.string(), position: z.string(), status: ApplicationStatus, appliedAt: z.iso.date(), salary: z.string().optional(), notes: z.string() });
+
+export type CreateApplicationInput = __TypedOpenapi.Schemas.CreateApplicationInput;
+export const CreateApplicationInput = z.strictObject({ companyId: z.string(), position: z.string(), appliedAt: z.iso.date(), salary: z.string().optional(), notes: z.string().optional() });
+
+export type UpdateApplicationInput = __TypedOpenapi.Schemas.UpdateApplicationInput;
+export const UpdateApplicationInput = z.strictObject({ status: ApplicationStatus });
+
+export type InterviewKind = __TypedOpenapi.Schemas.InterviewKind;
+export const InterviewKind = z.enum(["phone", "video", "onsite"]);
+
+export type Interview = __TypedOpenapi.Schemas.Interview;
+export const Interview = z.strictObject({ id: z.string(), kind: InterviewKind, scheduledAt: z.iso.datetime(), interviewer: z.string() });
+
+export type Company = __TypedOpenapi.Schemas.Company;
+export const Company = z.strictObject({ id: z.string(), name: z.string() });
+
 // </Schemas>
 
 // <Endpoints>
+export type get_ListApplications = __TypedOpenapi.Endpoints.get_ListApplications;
+export const get_ListApplications = {
+  method: z.literal("GET"),
+  path: z.literal("/api/applications"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { query: z.strictObject({ status: z.array(ApplicationStatus), sort: ApplicationSort, page: z.coerce.number().int().min(1) }).partial().optional() },
+  responses: { 200: ApplicationPage },
+};
+
+export type post_CreateApplication = __TypedOpenapi.Endpoints.post_CreateApplication;
+export const post_CreateApplication = {
+  method: z.literal("POST"),
+  path: z.literal("/api/applications"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { body: CreateApplicationInput },
+  responses: { 201: ApplicationDetail },
+};
+
+export type get_GetApplication = __TypedOpenapi.Endpoints.get_GetApplication;
+export const get_GetApplication = {
+  method: z.literal("GET"),
+  path: z.literal("/api/applications/{applicationId}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ applicationId: z.string() }) },
+  responses: { 200: ApplicationDetail, 404: z.unknown() },
+};
+
+export type patch_UpdateApplication = __TypedOpenapi.Endpoints.patch_UpdateApplication;
+export const patch_UpdateApplication = {
+  method: z.literal("PATCH"),
+  path: z.literal("/api/applications/{applicationId}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ applicationId: z.string() }), body: UpdateApplicationInput },
+  responses: { 200: ApplicationDetail, 404: z.unknown() },
+};
+
+export type delete_DeleteApplication = __TypedOpenapi.Endpoints.delete_DeleteApplication;
+export const delete_DeleteApplication = {
+  method: z.literal("DELETE"),
+  path: z.literal("/api/applications/{applicationId}"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ applicationId: z.string() }) },
+  responses: { 204: z.unknown(), 404: z.unknown() },
+};
+
+export type get_ListInterviews = __TypedOpenapi.Endpoints.get_ListInterviews;
+export const get_ListInterviews = {
+  method: z.literal("GET"),
+  path: z.literal("/api/applications/{applicationId}/interviews"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { path: z.strictObject({ applicationId: z.string() }) },
+  responses: { 200: z.array(Interview), 404: z.unknown() },
+};
+
+export type get_SearchCompanies = __TypedOpenapi.Endpoints.get_SearchCompanies;
+export const get_SearchCompanies = {
+  method: z.literal("GET"),
+  path: z.literal("/api/companies"),
+  requestFormat: z.literal("json"),
+  responseFormat: z.literal("json"),
+  parameters: { query: z.strictObject({ q: z.string() }) },
+  responses: { 200: z.array(Company) },
+};
+
 // </Endpoints>
 
   
      // <EndpointByMethod>
      export const EndpointByMethod = {
-     
+     get: {
+           "/api/applications": get_ListApplications,
+"/api/applications/{applicationId}": get_GetApplication,
+"/api/applications/{applicationId}/interviews": get_ListInterviews,
+"/api/companies": get_SearchCompanies
+         },
+post: {
+           "/api/applications": post_CreateApplication
+         },
+patch: {
+           "/api/applications/{applicationId}": patch_UpdateApplication
+         },
+delete: {
+           "/api/applications/{applicationId}": delete_DeleteApplication
+         }
      } satisfies { [M in keyof __TypedOpenapi.EndpointByMethod]: { [P in keyof __TypedOpenapi.EndpointByMethod[M]]: unknown } }
      export type EndpointByMethod = __TypedOpenapi.EndpointByMethod;
      // </EndpointByMethod>
      
 
     // <EndpointByMethod.Shorthands>
-    
+    export type GetEndpoints = EndpointByMethod["get"]
+export type PostEndpoints = EndpointByMethod["post"]
+export type PatchEndpoints = EndpointByMethod["patch"]
+export type DeleteEndpoints = EndpointByMethod["delete"]
     // </EndpointByMethod.Shorthands>
     
   
@@ -52,7 +169,7 @@ export type SecurityRequirements = readonly (readonly string[])[];
     export type ParameterSerialization = { style: string; explode: boolean; allowReserved: boolean };
     export type EndpointParameterStyles = Partial<Record<"query" | "path" | "header" | "cookie", Record<string, ParameterSerialization>>>;
     /** OpenAPI parameter styles used by the built-in encoders. */
-    export const endpointParameterStyles = {} as Partial<Record<string, Partial<Record<string, EndpointParameterStyles>>>>;
+    export const endpointParameterStyles = {"get":{"/api/applications":{"query":{"status":{"style":"form","explode":true,"allowReserved":false},"sort":{"style":"form","explode":true,"allowReserved":false},"page":{"style":"form","explode":true,"allowReserved":false}}},"/api/applications/{applicationId}":{"path":{"applicationId":{"style":"simple","explode":false,"allowReserved":false}}},"/api/applications/{applicationId}/interviews":{"path":{"applicationId":{"style":"simple","explode":false,"allowReserved":false}}},"/api/companies":{"query":{"q":{"style":"form","explode":true,"allowReserved":false}}}},"patch":{"/api/applications/{applicationId}":{"path":{"applicationId":{"style":"simple","explode":false,"allowReserved":false}}}},"delete":{"/api/applications/{applicationId}":{"path":{"applicationId":{"style":"simple","explode":false,"allowReserved":false}}}}} as Partial<Record<string, Partial<Record<string, EndpointParameterStyles>>>>;
     // </EndpointParameterStyles>
     
 
@@ -493,7 +610,114 @@ export class ApiClient {
     return
   }
 
-  
+  // <ApiClient.get>
+    get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<SafeApiResponse<TEndpoint>>;
+
+    get<Path extends keyof GetEndpoints, TEndpoint extends GetEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<InferSuccessData<TEndpoint>>;
+
+    get<Path extends keyof GetEndpoints>(
+      path: Path,
+      ...params: [config?: unknown]
+    ): Promise<unknown> {
+        return this.request("get", path, params[0] as never) as Promise<unknown>;
+    }
+    // </ApiClient.get>
+    
+// <ApiClient.post>
+    post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<SafeApiResponse<TEndpoint>>;
+
+    post<Path extends keyof PostEndpoints, TEndpoint extends PostEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<InferSuccessData<TEndpoint>>;
+
+    post<Path extends keyof PostEndpoints>(
+      path: Path,
+      ...params: [config?: unknown]
+    ): Promise<unknown> {
+        return this.request("post", path, params[0] as never) as Promise<unknown>;
+    }
+    // </ApiClient.post>
+    
+// <ApiClient.patch>
+    patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<SafeApiResponse<TEndpoint>>;
+
+    patch<Path extends keyof PatchEndpoints, TEndpoint extends PatchEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<InferSuccessData<TEndpoint>>;
+
+    patch<Path extends keyof PatchEndpoints>(
+      path: Path,
+      ...params: [config?: unknown]
+    ): Promise<unknown> {
+        return this.request("patch", path, params[0] as never) as Promise<unknown>;
+    }
+    // </ApiClient.patch>
+    
+// <ApiClient.delete>
+    delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse: true; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<SafeApiResponse<TEndpoint>>;
+
+    delete<Path extends keyof DeleteEndpoints, TEndpoint extends DeleteEndpoints[Path]>(
+      path: Path,
+      ...params: MaybeOptionalArg<
+        (TEndpoint extends { parameters: infer UParams }
+          ? NotNever<InferSchemaInput<UParams>> extends true ? InferSchemaInput<UParams> & { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide } : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide }
+          : { overrides?: RequestInit; queryOptions?: ApiQueryOptions; withResponse?: false; throwOnStatusError?: boolean; validate?: ValidateSide })
+      >
+    ): Promise<InferSuccessData<TEndpoint>>;
+
+    delete<Path extends keyof DeleteEndpoints>(
+      path: Path,
+      ...params: [config?: unknown]
+    ): Promise<unknown> {
+        return this.request("delete", path, params[0] as never) as Promise<unknown>;
+    }
+    // </ApiClient.delete>
+    
 
     // <ApiClient.request>
     /**
